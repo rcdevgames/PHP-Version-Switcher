@@ -54,7 +54,7 @@ class PHPVersionSwitcher(QWidget):
         global active_version
 
         self.setWindowTitle("PHP Version Switcher")
-        self.setGeometry(100, 100, 300, 100)
+        self.setGeometry(100, 100, 450, 100)
         layout = QVBoxLayout()
 
         # Create a label
