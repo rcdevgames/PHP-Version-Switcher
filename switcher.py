@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QComboBox, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QComboBox
 
 CONFIG_FILE = 'php_version_config.json'
 
@@ -30,7 +30,6 @@ def switch_php_version(selected_version):
 
     # Check if the selected version is already the active one
     if os.path.exists(current_php_path) and os.path.samefile(current_php_path, new_php_path):
-        QMessageBox.information(None, "Info", f"PHP {selected_version} is already active")
         return
 
     try:
@@ -43,9 +42,8 @@ def switch_php_version(selected_version):
         os.rename(new_php_path, current_php_path)
         active_version = selected_version  # Update the active version
         save_active_version(active_version)  # Save the active version to the config file
-        QMessageBox.information(None, "Success", f"Switched to PHP {selected_version}")
     except Exception as e:
-        QMessageBox.critical(None, "Error", f"Failed to switch PHP version: {str(e)}")
+        pass
 
 class PHPVersionSwitcher(QWidget):
     def __init__(self):
@@ -60,8 +58,8 @@ class PHPVersionSwitcher(QWidget):
         layout = QVBoxLayout()
 
         # Create a label
-        label = QLabel("Select PHP Version:")
-        layout.addWidget(label)
+        self.label = QLabel("Select PHP Version:")
+        layout.addWidget(self.label)
 
         # Get the list of PHP versions
         php_base_path = r"C:\php"
@@ -70,10 +68,22 @@ class PHPVersionSwitcher(QWidget):
         # Load the active version from the config file
         active_version = load_active_version()
 
+        # Display the active version in the label
+        if active_version:
+            self.label.setText(f"Select PHP Version: (Current: {active_version})")
+        else:
+            self.label.setText("Select PHP Version:")
+
         # Create a dropdown menu
         self.version_combo = QComboBox(self)
         self.version_combo.addItem("Select a version")
         self.version_combo.addItems(self.php_versions)
+        
+        # Set the active version as the current item
+        if active_version and active_version in self.php_versions:
+            index = self.php_versions.index(active_version) + 1  # +1 to account for "Select a version"
+            self.version_combo.setCurrentIndex(index)
+
         self.version_combo.currentIndexChanged.connect(self.on_dropdown_change)
         layout.addWidget(self.version_combo)
 
@@ -83,6 +93,7 @@ class PHPVersionSwitcher(QWidget):
         selected_version = self.version_combo.currentText()
         if selected_version != "Select a version":
             switch_php_version(selected_version)
+            self.label.setText(f"Select PHP Version: (Current: {selected_version})")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
